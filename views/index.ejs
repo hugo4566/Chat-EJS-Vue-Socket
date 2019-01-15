@@ -1,0 +1,75 @@
+<html>
+<head>
+	<title>Real time web chat</title>
+	<script src='/socket.io/socket.io.js' type='text/javascript'></script>
+	<script src="/vue.js" type='text/javascript'></script>
+	<link rel="stylesheet" type="text/css" href="bulma.css">
+	<style>
+		#content {
+				height: 300px;
+				margin: 0 0 20px 0;
+				border: solid 1px #999;
+				overflow-y: scroll;
+			}
+	</style>
+<body>
+	<div id="app">
+		<div class="container">
+			<div id='content'>
+				<ul>
+					<li v-for="(message) in messages">{{message.username}} : {{message.message}}</li>
+				</ul>
+			</div>
+			<div class="field">
+				<label class="lable">Name:</label>
+				<div class="control">
+					<input v-model="username" id='name' class="input" type="text" placeholder="Name" />
+				</div>
+			</div>
+			<div class="field">
+				<label class="lable">Mensagem:</label>
+				<div class="control">
+					<input v-model="message" id='field' class="input" type="text" placeholder="Mensagem" /><br />
+				</div>
+			</div>
+			<div class="field">
+				<div class="control">
+					<input class="button" id='sendIO' type='button' value='SendIO' @click="sendIO" />
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+<script>
+	var socket = io('http://localhost:3700/');
+
+	new Vue({
+		el: '#app',
+		data: {
+			messages: [],
+			username: '',
+			message: ''
+		},
+		created() {
+			socket.on('message', function (data) {
+				if(data.message) {
+					this.messages.push(data)
+				} else {
+					console.log("There is a problem:", data);
+				}
+   			}.bind(this));
+		},
+		methods: {
+			sendIO: function () {
+				if(this.username.trim() === '') {
+					alert("Please type your name!");
+				}else{
+					socket.emit('send', { message: this.message, username: this.username });
+				}
+			}
+		}
+	});
+</script>
+
+</html>
